@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum VideoStatus {
+  pending
+  processing
+  ready
+  failed
+}
+
+enum JobStatus {
+  queued
+  active
+  completed
+  failed
+}
+
+model User {
+  id         String   @id @default(uuid())
+  email      String?  @unique
+  name       String?
+  createdAt  DateTime @default(now())
+  videos     Video[]
+}
+
+model Video {
+  id               String            @id @default(uuid())
+  ownerId          String?           
+  owner            User?             @relation(fields: [ownerId], references: [id])
+  title            String
+  description      String?
+  status           VideoStatus       @default(pending)
+  srcObjectKey     String?
+  storageBaseUri   String
+  durationSeconds  Int?
+  error            String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  renditions       VideoRendition[]
+  jobs             Job[]
+  @@index([ownerId])
+}
+
+model VideoRendition {
+  id          String @id @default(uuid())
+  video       Video  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  videoId     String
+  height      Int
+  bitrateKbps Int?
+  codec       String
+  playlistUri String
+  status      String @default("ready")
+  @@index([videoId])
+}
+
+model Job {
+  id         String    @id @default(uuid())
+  video      Video     @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  videoId    String
+  type       String
+  status     JobStatus @default(queued)
+  attempts   Int       @default(0)
+  error      String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  @@index([videoId])
+}
