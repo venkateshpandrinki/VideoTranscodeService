@@ -145,8 +145,7 @@ async function handleJob(jobData: TranscodeJobData) {
     console.log("Downloading source from MinIO...");
     await fGetObjectToFile(MINIO_BUCKET, srcObjectKey, inputFile);
 
-    // optional: you can probe with ffprobe if you want (not required for the single-shot ffmpeg)
-    // run ffmpeg -> HLS + thumbnail
+ 
     console.log("Running ffmpeg to produce HLS renditions...");
     const { outDir: producedDir, masterName, thumbFile } = await transcodeToHls(inputFile, outDir);
 
@@ -154,6 +153,15 @@ async function handleJob(jobData: TranscodeJobData) {
     const remotePrefix = path.posix.join("hls", videoId);
     console.log("Uploading HLS output to MinIO at", remotePrefix);
     await uploadDirRecursive(producedDir, MINIO_BUCKET, remotePrefix);
+
+    await prisma.videoRendition.createMany({
+      data:[
+        { videoId, height: 1080, bitrateKbps: 5000, codec: "h264", playlistUri: `${remotePrefix}/0/index.m3u8` },
+    { videoId, height: 720,  bitrateKbps: 2800, codec: "h264", playlistUri: `${remotePrefix}/1/index.m3u8` },
+    { videoId, height: 480,  bitrateKbps: 1400, codec: "h264", playlistUri: `${remotePrefix}/2/index.m3u8` },
+    { videoId, height: 144,  bitrateKbps: 200,  codec: "h264", playlistUri: `${remotePrefix}/3/index.m3u8` },
+      ]
+    })
 
     // upload thumbnail to thumbs/{videoId}.jpg
     const thumbRemote = path.posix.join("thumbs", `${videoId}.jpg`);

@@ -1,8 +1,6 @@
-// app/watch/[id]/WatchPage.tsx
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import Hls from "hls.js";
 
 interface Video {
   id: string;
@@ -14,35 +12,87 @@ interface Video {
 
 export default function WatchPage({ video }: { video: Video }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
+useEffect(() => {
+  let player: any;
+  let ui: any;
+  let isMounted = true;
+
+  (async () => {
+    const shaka = (await import("shaka-player/dist/shaka-player.ui")).default;
+      // @ts-ignore
+    await import("shaka-player/dist/controls.css");
+
     const videoEl = videoRef.current;
-    if (!videoEl || !video.masterPlaylist) return;
+    const containerEl = containerRef.current;
+    if (!videoEl || !containerEl || !video.masterPlaylist) return;
 
-    if (Hls.isSupported()) {
-      const hls = new Hls();
-      hls.loadSource(video.masterPlaylist);
-      hls.attachMedia(videoEl);
+    shaka.polyfill.installAll();
 
-      return () => {
-        hls.destroy();
-      };
-    } else if (videoEl.canPlayType("application/vnd.apple.mpegurl")) {
-      videoEl.src = video.masterPlaylist;
+    if (!shaka.Player.isBrowserSupported()) {
+      console.error("Shaka Player not supported in this browser");
+      return;
     }
-  }, [video.masterPlaylist]);
+
+    player = new shaka.Player(videoEl);
+    ui = new shaka.ui.Overlay(player, containerEl, videoEl);
+
+    player
+      .load(video.masterPlaylist)
+      .then(() => {
+        if (!isMounted) return;
+
+        const controls = ui.getControls();
+
+        if (controls) {
+          // Wait for the UI to be updated before configuring
+          controls.addEventListener("uiupdated", () => {
+            try {
+              controls.configure({
+                overflowMenuButtons: ["quality", "captions", "playback_rate"],
+                controlPanelElements: [
+                  "rewind",
+                  "fast_forward",
+                  "play_pause",
+                  "time_and_duration",
+                  "mute",
+                  "volume",
+                  "overflow_menu",
+                ],
+              });
+            } catch (e) {
+              console.warn("Shaka controls config error:", e);
+            }
+          });
+        }
+      })
+      .catch((err: any) => {
+        console.error("Shaka load error", err);
+      });
+  })();
+
+  return () => {
+    isMounted = false;
+    if (ui) ui.destroy();
+    if (player) player.destroy();
+  };
+}, [video.masterPlaylist]);
 
   return (
     <div className="max-w-3xl mx-auto">
       <h1 className="text-2xl font-semibold mb-2">{video.title}</h1>
       <p className="text-gray-600 mb-4">{video.description}</p>
 
-      <video
-        ref={videoRef}
-        controls
-        className="w-full bg-black rounded-lg shadow"
+      {/* Shaka container should manage video + controls */}
+      <div
+        ref={containerRef}
+        className="shaka-video-container bg-black rounded-lg shadow w-full"
         style={{ aspectRatio: "16/9" }}
-      />
+      >
+        {/* Don’t add shaka classes here, Shaka will handle */}
+        <video ref={videoRef} />
+      </div>
     </div>
   );
 }

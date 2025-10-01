@@ -1,104 +1,97 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { toast } from "sonner"
-import { apiFetch } from "@/lib/api"
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { apiFetch } from "@/lib/api";
 
 type SessionUserWithId = {
-  id: string
-  name?: string | null
-  email?: string | null
-  image?: string | null
-}
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+};
 
 type SessionWithUserId = {
-  user?: SessionUserWithId
-} | null
+  user?: SessionUserWithId;
+} | null;
+
+export const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
 export default function UploadPage() {
-  const { data: session } = useSession() as { data: SessionWithUserId }
-  const router = useRouter()
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
-  const [file, setFile] = useState<File | null>(null)
-  const [progress, setProgress] = useState(0)
-  const [loading, setLoading] = useState(false)
+  const { data: session } = useSession() as { data: SessionWithUserId };
+  const router = useRouter();
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const handleUpload = async () => {
     if (!title || !file || !session?.user?.id) {
-      console.log(title);
-      console.log(session);
-      console.log(session?.user?.name)
-      
-      
-      toast( "Title, file, and login required" )
-      return
+      toast("Title, file, and login required");
+      return;
     }
 
-    setLoading(true)
-    setProgress(0)
+    setLoading(true);
+    setProgress(0);
 
     try {
       // 1. Create video
       const createRes = await apiFetch("/api/videos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          description,
-          ownerId: session.user.id,
-        }),
-      })
-      const { videoId } = await createRes.json()
+        body: JSON.stringify({ title, description, ownerId: session.user.id }),
+      });
+      const { videoId } = createRes; // apiFetch already returns parsed JSON
 
       // 2. Get presigned URL
       const presignRes = await apiFetch(`/api/videos/${videoId}/presign`, {
         method: "POST",
-      })
-      const { url, objectKey } = await presignRes.json()
+      });
+      const { url, objectKey } = presignRes; // no .json()
 
       // 3. Upload with progress
       await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest()
-        xhr.open("PUT", url)
-        xhr.setRequestHeader("Content-Type", file.type)
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", url);
+        xhr.setRequestHeader("Content-Type", file.type);
 
         xhr.upload.onprogress = (event) => {
           if (event.lengthComputable) {
-            const percent = Math.round((event.loaded / event.total) * 100)
-            setProgress(percent)
+            const percent = Math.round((event.loaded / event.total) * 100);
+            setProgress(percent);
           }
-        }
+        };
 
-        xhr.onload = () => (xhr.status === 200 ? resolve() : reject(xhr.statusText))
-        xhr.onerror = () => reject("Upload failed")
-        xhr.send(file)
-      })
+        xhr.onload = () => (xhr.status === 200 ? resolve() : reject(xhr.statusText));
+        xhr.onerror = () => reject("Upload failed");
+        xhr.send(file);
+      });
 
       // 4. Call complete
       await apiFetch(`/api/videos/${videoId}/complete`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ objectKey }),
-      })
+      });
 
-      toast( "Upload successful! Video is being processed." )
-      // router.push(`/watch/${videoId}`)
+      toast("Upload successful! Video is being processed.");
+      // router.push(`/watch/${videoId}`);
     } catch (err: any) {
-      console.error(err)
-      toast( "Upload failed: " + err.message )
+      console.error(err);
+      toast("Upload failed: " + err.message);
     } finally {
-      setLoading(false)
-      setProgress(0)
+      setLoading(false);
+      setProgress(0);
     }
-  }
+  };
 
   return (
     <Card className="max-w-lg mx-auto mt-8">
@@ -127,5 +120,5 @@ export default function UploadPage() {
         </Button>
       </CardContent>
     </Card>
-  )
+  );
 }

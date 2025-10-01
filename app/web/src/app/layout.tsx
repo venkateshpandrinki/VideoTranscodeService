@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Video Transcode",
-  description: "",
+  description: "Professional video transcoding service",
 };
 
 export default function RootLayout({
@@ -30,15 +30,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-
         <Providers>
-
-      <Navbar/>
-
-        {children}
+          <Navbar />
+          <main className="min-h-screen">
+            {children}
+          </main>
         </Providers>
-        <Toaster/>
-        
+        <Toaster />
       </body>
     </html>
   );
