@@ -4,7 +4,10 @@ import useSWR from "swr";
 
 import { useParams } from "next/navigation";
 import { apiFetch } from "@/lib/api";
+
 import WatchPage from "./WatchPage";
+import WatchPageSkeleton from "@/components/WatchPageSkeleton";
+;
 
 export default function WatchPageContainer() {
   const { id } = useParams<{ id: string }>();
@@ -14,7 +17,7 @@ export default function WatchPageContainer() {
     (url: string) => apiFetch(url)
   );
 
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading) return <WatchPageSkeleton />;
   if (error) return <p>Error loading video</p>;
   if (!data) return <p>No video found</p>;
 
