@@ -1,11 +1,12 @@
-"use client";
+'use client';
 
-import VideoCard from "@/components/VideoCard";
-import VideoCardSkeleton from "@/components/VideoCardSkeleton";
-import { useVideos } from "@/hooks/useVideos";
-import { Video, Upload, Plus } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import VideoCard from '@/components/VideoCard';
+import VideoCardSkeleton from '@/components/VideoCardSkeleton';
+import { useVideos } from '@/hooks/useVideos';
+import { Video, Upload } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import type { Videotypes } from '@/types/video';
 
 export default function HomePage() {
   const { data: videos, isLoading, isError } = useVideos();
@@ -46,7 +47,6 @@ export default function HomePage() {
               Manage and watch your transcoded videos
             </p>
           </div>
-          
         </div>
 
         {/* Loading State */}
@@ -61,7 +61,7 @@ export default function HomePage() {
             {/* Videos Grid */}
             {Array.isArray(videos) && videos.length ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {videos.map((video: any) => (
+                {videos.map((video: Videotypes) => (
                   <VideoCard key={video.id} video={video} />
                 ))}
               </div>
@@ -75,10 +75,14 @@ export default function HomePage() {
                   No videos yet
                 </h2>
                 <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md">
-                  Get started by uploading your first video. We'll transcode it and make it ready for streaming.
+                  Get started by uploading your first video. We&apos;ll transcode it and make it
+                  ready for streaming.
                 </p>
                 <Link href="/upload">
-                  <Button size="lg" className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-lg">
+                  <Button
+                    size="lg"
+                    className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-lg"
+                  >
                     <Upload className="w-5 h-5 mr-2" />
                     Upload Your First Video
                   </Button>

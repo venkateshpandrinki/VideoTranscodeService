@@ -1,19 +1,19 @@
-"use client"
+'use client';
 
-import Link from "next/link"
-import { useSession, signIn, signOut } from "next-auth/react"
-import { Button } from "@/components/ui/button"
+import Link from 'next/link';
+import { useSession, signIn, signOut } from 'next-auth/react';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Menu, Video, Upload } from "lucide-react"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+} from '@/components/ui/dropdown-menu';
+import { Menu, Video, Upload } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 export default function Navbar() {
-  const { data: session } = useSession()
+  const { data: session } = useSession();
 
   return (
     <nav className="w-full bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 backdrop-blur-sm border-b border-white/10 shadow-lg">
@@ -35,7 +35,7 @@ export default function Navbar() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => signIn("google")}
+                onClick={() => signIn('google')}
                 className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/30 transition-all duration-200"
               >
                 Sign In
@@ -62,20 +62,25 @@ export default function Navbar() {
                       className="flex items-center space-x-2 text-white hover:bg-white/10 transition-all duration-200"
                     >
                       <Avatar className="w-8 h-8 ring-2 ring-white/20">
-                        <AvatarImage src={session.user?.image || ""} />
+                        <AvatarImage src={session.user?.image || ''} />
                         <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-600 text-white text-sm">
-                          {session.user?.name?.charAt(0) || "U"}
+                          {session.user?.name?.charAt(0) || 'U'}
                         </AvatarFallback>
                       </Avatar>
                       <span className="hidden md:inline font-medium">
-                        {session.user?.name || "User"}
+                        {session.user?.name || 'User'}
                       </span>
                       <Menu className="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48 bg-white/95 backdrop-blur-sm border border-gray-200/50 shadow-xl">
-                    
-                    <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer text-red-600">
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-48 bg-white/95 backdrop-blur-sm border border-gray-200/50 shadow-xl"
+                  >
+                    <DropdownMenuItem
+                      onClick={() => signOut()}
+                      className="cursor-pointer text-red-600"
+                    >
                       Logout
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -86,5 +91,5 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
-  )
+  );
 }
