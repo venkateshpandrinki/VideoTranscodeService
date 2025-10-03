@@ -208,7 +208,15 @@ router.post('/:id/complete', async (req, res) => {
         srcObjectKey: objectKey,
         storageBaseUri: `${process.env.PUBLIC_HLS_BASE_URL || config.publicHlsBaseUrl}/hls/${id}`,
       },
-      { jobId: id }
+      { jobId: id,
+        attempts:3,
+        backoff:{
+          type:'exponential',
+          delay:5000
+        },
+        removeOnComplete:1000,
+        removeOnFail:true
+       }
     );
 
     res.json({ message: 'upload complete, transcode queued', videoId: id });
