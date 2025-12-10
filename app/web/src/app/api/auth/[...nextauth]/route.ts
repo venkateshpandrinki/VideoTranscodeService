@@ -11,9 +11,8 @@ const handler = NextAuth({
   ],
   callbacks: {
     async jwt({ token, account, profile }) {
-      // First time login → sync with Express backend
       if (account && profile) {
-        const res = await apiFetch('/auth/sync', {
+        const res = await fetch(`${process.env.API_URL_INTERNAL}/auth/sync`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -23,8 +22,6 @@ const handler = NextAuth({
         });
 
         const user = await res.json();
-
-        // Store user.id in the JWT
         token.id = user.id;
       }
 
@@ -33,7 +30,6 @@ const handler = NextAuth({
 
     async session({ session, token }) {
       if (session.user && token.id) {
-        // Attach id to session.user
         session.user.id = token.id as string;
       }
       return session;

@@ -10,7 +10,7 @@ import WatchPageSkeleton from '@/components/WatchPageSkeleton';
 export default function WatchPageContainer() {
   const { id } = useParams<{ id: string }>();
 
-  const { data, error, isLoading } = useSWR(id ? `/api/videos/${id}` : null, (url: string) =>
+  const { data, error, isLoading } = useSWR(id ? `/videos/${id}` : null, (url: string) =>
     apiFetch(url)
   );
 

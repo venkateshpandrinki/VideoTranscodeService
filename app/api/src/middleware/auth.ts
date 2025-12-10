@@ -12,9 +12,9 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
   const token = authHeader.split(' ')[1];
 
   try {
-    // Same secret you used in NEXTAUTH_SECRET
+    // @ts-expect-error: NEXTAUTH_SECRET may be undefined at type level, but is checked at runtime
     const decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET!);
-    // Attach decoded user to request for later use
+    // @ts-expect-error: Express Request type does not include 'user', but we attach it dynamically
     req.user = decoded;
     next();
   } catch (error) {

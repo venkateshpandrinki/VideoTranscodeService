@@ -20,7 +20,7 @@ app.use(
   })
 );
 
-app.use('/api/videos', videosRouter);
+app.use('/videos', videosRouter);
 
 app.get('/ping', (_req, res) => res.send('pong'));
 app.post('/auth/sync', async (req, res) => {

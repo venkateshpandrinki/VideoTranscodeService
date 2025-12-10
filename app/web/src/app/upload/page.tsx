@@ -21,7 +21,7 @@ type SessionWithUserId = {
   user?: SessionUserWithId;
 } | null;
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
 export default function UploadPage() {
   const { data: session } = useSession() as { data: SessionWithUserId };
@@ -42,7 +42,7 @@ export default function UploadPage() {
 
     try {
       // 1. Create video
-      const createRes = await apiFetch('/api/videos', {
+      const createRes = await apiFetch('/videos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, description, ownerId: session.user.id }),
@@ -50,7 +50,7 @@ export default function UploadPage() {
       const { videoId } = createRes; // apiFetch already returns parsed JSON
 
       // 2. Get presigned URL
-      const presignRes = await apiFetch(`/api/videos/${videoId}/presign`, {
+      const presignRes = await apiFetch(`/videos/${videoId}/presign`, {
         method: 'POST',
       });
       const { url, objectKey } = presignRes; // no .json()
@@ -74,7 +74,7 @@ export default function UploadPage() {
       });
 
       // 4. Call complete
-      await apiFetch(`/api/videos/${videoId}/complete`, {
+      await apiFetch(`/videos/${videoId}/complete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ objectKey }),
