@@ -9,6 +9,7 @@ const router = express.Router();
 
 // Multer in-memory (only used for legacy multipart upload route)
 const upload = multer({ storage: multer.memoryStorage() });
+const publicHost = process.env.PUBLIC_HLS_BASE_URL || config.publicHlsBaseUrl;
 
 // POST /api/videos  -> create DB record and return videoId
 router.post('/', async (req, res) => {
@@ -27,7 +28,7 @@ router.post('/', async (req, res) => {
     // LOGGING: Log success
     logger.info({ videoId: v.id, ownerId: v.ownerId }, 'Video record created successfully');
 
-    const storageBaseUri = `${process.env.PUBLIC_HLS_BASE_URL || config.publicHlsBaseUrl}/hls/${v.id}`;
+    const storageBaseUri = `/hls/${v.id}`;
     await prisma.video.update({
       where: { id: v.id },
       data: { storageBaseUri },
@@ -80,7 +81,7 @@ router.put('/:id/file', upload.single('file'), async (req, res) => {
       {
         videoId: id,
         srcObjectKey: objectKey,
-        storageBaseUri: `${process.env.PUBLIC_HLS_BASE_URL || config.publicHlsBaseUrl}/hls/${id}`,
+        storageBaseUri: `/hls/${id}`,
       },
       { jobId: id }
     );
@@ -113,11 +114,12 @@ router.post('/:id/presign', async (req, res) => {
     if (!video) return res.status(404).json({ error: 'video not found' });
 
     const objectKey = `uploads/${id}/${Date.now()}.mp4`;
-    const url = await minioClient.presignedPutObject(
+    let url = await minioClient.presignedPutObject(
       config.minio.bucket,
       objectKey,
       60 * 15 // 15 min expiry
     );
+    url = url.replace("http://minio:9000", process.env.PUBLIC_MINIO_URL || config.PUBLIC_MINIO_URL);
 
     res.json({ url, objectKey });
     logger.info({ videoId: id, objectKey }, 'Presigned URL generated successfully');
@@ -147,7 +149,7 @@ router.get('/:id', async (req, res) => {
       description: video.description,
       status: video.status,
       storageBaseUri: video.storageBaseUri,
-      masterPlaylist: video.status === 'ready' ? `${video.storageBaseUri}/master.m3u8` : null,
+      masterPlaylist: video.status === 'ready' ? `${publicHost}${video.storageBaseUri}/master.m3u8` : null,
       durationSeconds: video.durationSeconds,
       renditions: video.renditions,
       jobs: video.jobs,
@@ -206,7 +208,7 @@ router.post('/:id/complete', async (req, res) => {
       {
         videoId: id,
         srcObjectKey: objectKey,
-        storageBaseUri: `${process.env.PUBLIC_HLS_BASE_URL || config.publicHlsBaseUrl}/hls/${id}`,
+        storageBaseUri: `/hls/${id}`,
       },
       {
         jobId: id,

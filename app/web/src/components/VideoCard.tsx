@@ -2,10 +2,10 @@ import Link from 'next/link';
 import { Play, Clock, CheckCircle, Loader2 } from 'lucide-react';
 import type { Videotypes } from '@/types/video';
 import Image from 'next/image';
+const publicHost = process.env.NEXT_PUBLIC_CDN_HOST || 'http://localhost:8080';
 
 export default function VideoCard({ video }: { video: Videotypes }) {
-  const poster = video?.storageBaseUri ? `${video.storageBaseUri}/thumb.jpg` : null;
-
+  const poster = video?.storageBaseUri ? `${publicHost}${video.storageBaseUri}/thumb.jpg` : null;
   const getStatusIcon = () => {
     switch (video.status) {
       case 'ready':
@@ -40,6 +40,7 @@ export default function VideoCard({ video }: { video: Videotypes }) {
                 width={400}
                 height={192}
                 className="w-full h-48 sm:h-52 lg:h-44 xl:h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                unoptimized
               />
               <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                 <div className="p-3 bg-white/20 backdrop-blur-sm rounded-full">

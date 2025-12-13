@@ -28,6 +28,7 @@ export const config = {
   },
   uploadDir: process.env.UPLOAD_DIR || './uploads',
   publicHlsBaseUrl: process.env.PUBLIC_HLS_BASE_URL || 'http://localhost:8080',
+  PUBLIC_MINIO_URL: process.env.PUBLIC_MINIO_URL || 'http://localhost',
 };
 
 export const minioClient = new MinioClient({
