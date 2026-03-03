@@ -6,7 +6,10 @@ A production-ready, fully dockerized video streaming platform. This architecture
 
 ##  Architecture 
 
-<img width="1374" height="931" alt="diagram-export-3-3-2026-5_23_25-pm" src="https://github.com/user-attachments/assets/18a152ca-e035-4cee-97c7-872c8819c702" />
+
+<img width="4005" height="1477" alt="image" src="https://github.com/user-attachments/assets/7704992d-e985-443d-b397-63f1ff6d14f8" />
+
+
 
 ---
 ## Tech Stack
